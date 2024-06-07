@@ -18,7 +18,6 @@ def main():
     df = pd.DataFrame
     file = ""
     lst = [""]
-    symbols_lst = []
     word_lst = []
     word_del = [""]
     count = []
@@ -49,14 +48,14 @@ def main():
         print("")
         rep_sym = input(f"{green}REPLACE SYMBOL WITH? ")
         rep_wrd = input(f"{green}REPLACE WORD WITH? ")
-        for c in range(len(column_names_func)):
+        for rn in range(len(column_names_func)):
             # SYMBOL
             for sym_rep in range(len(del_sym)):
                 # REMOVE SYMBOL FROM STRING
-                column_names_func[c] = column_names_func[c].replace(del_sym[sym_rep], rep_sym)
+                column_names_func[rn] = column_names_func[rn].replace(del_sym[sym_rep], rep_sym)
             # WORD
             # SPLIT STRING INTO INDIVIDUAL WORDS
-            words = column_names_func[c].split()
+            words = column_names_func[rn].split()
             for wrd_rep in range(len(del_word)):
                 # REMOVE WORD FROM LIST
                 try:
@@ -64,7 +63,7 @@ def main():
                 except ValueError:
                     continue
             # JOIN WORDS BACK INTO STRING
-            column_names_func[c] = " ".join(words)
+            column_names_func[rn] = " ".join(words)
 
         # WRITE TO NEW FILE
         df.columns = column_names_func
