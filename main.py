@@ -56,14 +56,15 @@ def main():
             # WORD
             # SPLIT STRING INTO INDIVIDUAL WORDS
             words = column_names_func[rn].split()
-            for wrd_rep in range(len(del_word)):
-                # REMOVE WORD FROM LIST
-                try:
-                    words.remove(del_word[wrd_rep])
-                except ValueError:
-                    continue
-            # JOIN WORDS BACK INTO STRING
+            for idx, word in enumerate(words):
+                # Iterate over words, not indices
+                if word in del_word:
+                    # If the word needs to be replaced, replace it
+                    words[idx] = rep_wrd
+                    words[idx] = words[idx].strip()
+                # JOIN WORDS BACK INTO STRING
             column_names_func[rn] = " ".join(words)
+            column_names_func[rn] = column_names_func[rn].strip()
 
         # WRITE TO NEW FILE
         df.columns = column_names_func
