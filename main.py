@@ -2,6 +2,7 @@ import pandas as pd
 import tkinter as tk
 from tkinter import filedialog, messagebox
 import pyautogui as pg
+from tqdm import tqdm
 
 
 # COLOURS
@@ -69,8 +70,7 @@ col_names = df.columns
 # FUNCTION TO REPLACE COLUMN NAMES
 
 
-def rename(del_sym, del_word):
-
+def apply(del_sym, del_word):
     column_names_func = df.columns.tolist()
     print("")
     rep_sym = input(f"{green}REPLACE SYMBOL WITH? ")
@@ -94,12 +94,23 @@ def rename(del_sym, del_word):
         new_names.append(new_name)
     # Create a dictionary mapping old column names to new column names
     column_names_dict = dict(zip(df.columns, new_names))
-    df_new = df.rename(columns=column_names_dict)
+    df_replaced = df.rename(columns=column_names_dict)
     print("")
     print(blue + "PREVIEW OF NEW COLUMN NAMES:" + reset)
-    print(yellow + f"{new_names}" + reset)
+    print(yellow + f"{df_replaced.columns}" + reset)
     print("")
-    save = input(blue + f"{red}(1){blue}SAVE FILE OR {red}(2){blue}EDIT? " + reset)
+    save = input(blue + f"{red}(1){blue}SAVE CHANGES OR {red}(2){blue}EDIT AGAIN? " + reset)
+    if save == "1":
+        print("")
+        print(blue + "DONE! HERE ARE THE NEW COLUMN NAMES: " + reset)
+        print(df_replaced.columns)
+        return df_replaced.columns
+    elif save == "2":
+        return True
+
+
+def save():
+    save = input(blue + f"{red}(1){blue}SAVE FILE OR {red}(2){blue}EDIT AGAIN? " + reset)
     if save == "1":
         # WRITE TO NEW FILE
         new_file = filedialog.asksaveasfilename(defaultextension=".csv", parent=root,
@@ -108,16 +119,38 @@ def rename(del_sym, del_word):
         activate()
         if new_file:
             if ext == "csv":
-                df_new.to_csv(new_file, index=False)
+                df.to_csv(new_file, index=False)
             elif ext == "lsx":
-                df_new.to_excel(new_file, index=False)
+                df.to_excel(new_file, index=False)
             elif ext == "xls":
-                df_new.to_excel(new_file, index=False)
-            print("")
-            print(blue + "DONE! HERE ARE THE NEW COLUMN NAMES: " + reset)
-            print(df_new.columns)
+                df.to_excel(new_file, index=False)
     elif save == "2":
         return True
+
+
+def true_false():
+    # Calculate the total number of iterations (cells) in the DataFrame
+    total_iterations = df.size
+
+    # Initialize the progress bar
+    with tqdm(total=total_iterations) as pbar:
+        # Iterate over each cell in the DataFrame
+        for index, value in df.stack().items():
+            # Perform your processing here
+            if value == 'Yes':
+                df.at[index] = 'TRUE'
+            elif value == 'No':
+                df.at[index] = 'FALSE'
+
+            # Update the progress bar
+            pbar.update(1)
+
+
+def nan(df_new):
+    # Calculate the total number of iterations (cells) in the DataFrame
+    df_new = df_new.dropna()
+
+    return df_new  # Return the modified DataFrame
 
 
 if __name__ == "__main__":
@@ -145,9 +178,10 @@ if __name__ == "__main__":
             print(yellow + "LIST OF WORDS TO REMOVE" + red)
             print(*word_del)
             print("" + reset)
-            sel = input(f"{blue}(1){green}REMOVE SYMBOL, {blue}(2){green}REMOVE WORD, {blue}(3){green}EDIT LISTS, "
-                        f"{blue}(4){green}CAPITALIZE or LOWER CASE, {blue}(5){green}COMMIT & REMOVE, {blue}(6)"
-                        f"{green}EXIT? " + reset)
+            sel = input(f"{blue}(1){green}REMOVE SYMBOL {blue}(2){green}REMOVE WORD {blue}(3){green}APPLY CHANGES "
+                        f"{blue}(4){green}EDIT LISTS {blue}(5){green}CAPITALIZE or LOWER CASE {blue}(6){green}"
+                        f"TRUE & FALSE {blue}(7){green}REMOVE NAN ROWS {blue}(8){green}SAVE {blue}(9)"
+                        f"{green}EXIT?" + reset)
 
             match sel:
                 case "1":
@@ -207,6 +241,32 @@ if __name__ == "__main__":
                             continue
 
                 case "3":
+                    # Strip whitespace from elements in lst
+                    lst = [item.strip() for item in lst]
+                    if "NONE" in lst:
+                        lst.pop(0)
+                    if "NONE" in word_del:
+                        word_del.pop(0)
+                    print("")
+                    print(f"{red}TO BE REMOVED:")
+                    print("")
+                    print(f"SYMBOLS: {lst}")
+
+                    # Strip whitespace from elements in word_del
+                    if "" in word_del:
+                        word_del.remove("")
+                    else:
+                        word_del = [item.strip() for item in word_del]
+                    print(F"WORDS: {word_del}")
+                    print("")
+                    execute = input(f"{red}(1){blue}EXECUTE OR {red}(2){blue}BACK?: " + reset)
+                    match execute:
+                        case "1":
+                            df.columns = apply(lst, word_del)
+                        case "2":
+                            continue
+
+                case "4":
                     print("")
                     sw = input(f"{green}EDIT {blue}(1){green}SYMBOL OR {blue}(2){green}WORD LIST?: " + reset)
                     match sw:
@@ -246,7 +306,7 @@ if __name__ == "__main__":
                                 print(red + "WORD NOT FOUND IN LIST, TRY AGAIN...:" + reset)
                                 print("")
 
-                case "4":
+                case "5":
                     cap = input(f"{blue}(1){green}CAP ALL, {blue}(2){green}CAP FIRST or "
                                 f"{blue}(3){green}LOWER ALL? " + reset)
                     match cap:
@@ -268,33 +328,26 @@ if __name__ == "__main__":
                                 lst = [item.lower() for item in lst]
                                 word_del = [item.lower() for item in word_del]
                             df.columns = column_names
-
-                case "5":
-
-                    # Strip whitespace from elements in lst
-                    lst = [item.strip() for item in lst]
+                case "6":
                     print("")
-                    print(f"{red}TO BE REMOVED:")
+                    t_f = input(f"{red}(1){green}CONVERT YES & NO TO TRUE & FALSE OR {red}(2){green}BACK?")
+                    if t_f == "1":
+                        true_false()
+                    elif t_f == "2":
+                        continue
+
+                case "7":
                     print("")
-                    print(f"SYMBOLS: {lst}")
+                    t_f = input(f"{red}(1){green}DELETE ROWS WITH NaN CELLS OR {red}(2){green}BACK?")
+                    if t_f == "1":
+                        df = nan(df)
+                    elif t_f == "2":
+                        continue
 
-                    # Strip whitespace from elements in word_del
-                    if "" in word_del:
-                        word_del.remove("")
-                    else:
-                        word_del = [item.strip() for item in word_del]
-                    print(F"WORDS: {word_del}")
-                    print("")
-                    execute = input(f"{red}(1){blue}EXECUTE OR {red}(2){blue}BACK?: " + reset)
-                    match execute:
-                        case "1":
-                            rename(lst, word_del)
-                        case "2":
-                            continue
+                case "8":
+                    save()
 
-                    # Call rename function with updated lst and word_del
-
-                case  "6":
+                case  "9":
                     exit()
 
                 case _:
