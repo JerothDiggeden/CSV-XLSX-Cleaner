@@ -16,9 +16,9 @@ root = tk.Tk()
 root.withdraw()  # Hide the root window
 df = pd.DataFrame
 file = ""
-lst = [""]
+lst = ["NONE"]
+word_del = ["NONE"]
 word_lst = []
-word_del = [""]
 count = []
 new_names = []
 
@@ -28,17 +28,20 @@ def activate():
     pg.hotkey('alt', 'tab')
 
 
+def click():
+    pg.click()
+
+
 # PROMPT FOR FILE NAME
 while df.empty:
     root = tk.Tk()
     root.withdraw()
 
     try:
-        csv = messagebox.askokcancel("Import CSV File", "Do you want to import a CSV file?", parent=root)
-        activate()
+        csv = messagebox.askokcancel("Import File", "Do you want to import a file?", parent=root)
         if csv:
             file = filedialog.askopenfilename(parent=root)
-            activate()
+            click()
             if not file:
                 raise FileNotFoundError
         else:
@@ -48,8 +51,15 @@ while df.empty:
         continue
     # IMPORT DATA
     try:
-        df = pd.read_csv(file)
-        df_new = pd.read_csv(file)
+        ext_len = len(file) - 3
+        ext = file[ext_len:]
+        if ext == "csv":
+            df = pd.read_csv(file)
+            df_new = pd.read_csv(file)
+        elif ext == "lsx":
+            df = pd.read_excel(file)
+        elif ext == "xls":
+            df = pd.read_excel(file)
     except UnicodeDecodeError:
         print(red + "WRONG FILE TYPE, PLEASE SELECT A CSV FILE!")
         continue
@@ -92,10 +102,17 @@ def rename(del_sym, del_word):
     save = input(blue + f"{red}(1){blue}SAVE FILE OR {red}(2){blue}EDIT? " + reset)
     if save == "1":
         # WRITE TO NEW FILE
-        new_file = filedialog.asksaveasfilename(defaultextension=".csv", parent=root, filetypes=[("CSV Files", "*.csv")])
+        new_file = filedialog.asksaveasfilename(defaultextension=".csv", parent=root,
+                                                filetypes=[("CSV Files", "*.csv"),
+                                                           ("XLSX Files", "*.xlsx")])
         activate()
         if new_file:
-            df_new.to_csv(new_file, index=False)
+            if ext == "csv":
+                df_new.to_csv(new_file, index=False)
+            elif ext == "lsx":
+                df_new.to_excel(new_file, index=False)
+            elif ext == "xls":
+                df_new.to_excel(new_file, index=False)
             print("")
             print(blue + "DONE! HERE ARE THE NEW COLUMN NAMES: " + reset)
             print(df_new.columns)
@@ -122,18 +139,19 @@ if __name__ == "__main__":
             print(yellow + "COLUMN NAMES" + reset)
             print(column_names)
             print("")
-            print(yellow + "LIST OF SYMBOLS TO REMOVE" + reset)
+            print(yellow + "LIST OF SYMBOLS TO REMOVE" + red)
             print(*lst)
             print("")
-            print(yellow + "LIST OF WORDS TO REMOVE" + reset)
+            print(yellow + "LIST OF WORDS TO REMOVE" + red)
             print(*word_del)
-            print("")
+            print("" + reset)
             sel = input(f"{blue}(1){green}REMOVE SYMBOL, {blue}(2){green}REMOVE WORD, {blue}(3){green}EDIT LISTS, "
                         f"{blue}(4){green}CAPITALIZE or LOWER CASE, {blue}(5){green}COMMIT & REMOVE, {blue}(6)"
                         f"{green}EXIT? " + reset)
 
             match sel:
                 case "1":
+                    lst.remove("NONE")
                     print("")
                     resp = input(green + "ENTER SYMBOL/S TO REMOVE: " + reset)
                     if len(resp) == 1:
@@ -157,6 +175,7 @@ if __name__ == "__main__":
                         print("")
 
                 case "2":
+                    word_del.remove("NONE")
                     print("")
                     word = input(green + "ENTER A WORD/S TO REMOVE: " + reset)
                     if "1" in word or "2" in word or "3" in word or "4" in word or "5" in word or "6" in word or "7" in word or "8" in word or "9" in word or "0" in word:
@@ -252,7 +271,6 @@ if __name__ == "__main__":
 
                 case "5":
 
-                    lst.remove("")
                     # Strip whitespace from elements in lst
                     lst = [item.strip() for item in lst]
                     print("")
