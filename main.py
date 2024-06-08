@@ -178,8 +178,8 @@ if __name__ == "__main__":
             print(yellow + "LIST OF WORDS TO REMOVE" + red)
             print(*word_del)
             print("" + reset)
-            sel = input(f"{blue}(1){green}REMOVE SYMBOL {blue}(2){green}REMOVE WORD {blue}(3){green}APPLY CHANGES "
-                        f"{blue}(4){green}EDIT LISTS {blue}(5){green}CAPITALIZE or LOWER CASE {blue}(6){green}"
+            sel = input(f"{blue}(1){green}SYMBOLS {blue}(2){green}WORDS {blue}(3){green}CAPITALIZE OR LOWER CASE"
+                        f" {blue}(4){green}EDIT LISTS {blue}(5){green}APPLY CHANGES {blue}(6){green}"
                         f"TRUE & FALSE {blue}(7){green}REMOVE NAN ROWS {blue}(8){green}SAVE {blue}(9)"
                         f"{green}EXIT?" + reset)
 
@@ -241,30 +241,27 @@ if __name__ == "__main__":
                             continue
 
                 case "3":
-                    # Strip whitespace from elements in lst
-                    lst = [item.strip() for item in lst]
-                    if "NONE" in lst:
-                        lst.pop(0)
-                    if "NONE" in word_del:
-                        word_del.pop(0)
-                    print("")
-                    print(f"{red}TO BE REMOVED:")
-                    print("")
-                    print(f"SYMBOLS: {lst}")
-
-                    # Strip whitespace from elements in word_del
-                    if "" in word_del:
-                        word_del.remove("")
-                    else:
-                        word_del = [item.strip() for item in word_del]
-                    print(F"WORDS: {word_del}")
-                    print("")
-                    execute = input(f"{red}(1){blue}EXECUTE OR {red}(2){blue}BACK?: " + reset)
-                    match execute:
+                    cap = input(f"{blue}(1){green}CAP ALL, {blue}(2){green}CAP FIRST or "
+                                f"{blue}(3){green}LOWER ALL? " + reset)
+                    match cap:
                         case "1":
-                            df.columns = apply(lst, word_del)
+                            for c in column_names:
+                                column_names[column_names.index(c)] = c.upper()
+                                lst = [item.upper() for item in lst]
+                                word_del = [item.upper() for item in word_del]
+                            df.columns = column_names
                         case "2":
-                            continue
+                            for c in column_names:
+                                column_names[column_names.index(c)] = c.title()
+                                lst = [item.title() for item in lst]
+                                word_del = [item.title() for item in word_del]
+                            df.columns = column_names
+                        case "3":
+                            for c in column_names:
+                                column_names[column_names.index(c)] = c.lower()
+                                lst = [item.lower() for item in lst]
+                                word_del = [item.lower() for item in word_del]
+                            df.columns = column_names
 
                 case "4":
                     print("")
@@ -307,27 +304,31 @@ if __name__ == "__main__":
                                 print("")
 
                 case "5":
-                    cap = input(f"{blue}(1){green}CAP ALL, {blue}(2){green}CAP FIRST or "
-                                f"{blue}(3){green}LOWER ALL? " + reset)
-                    match cap:
+                    # Strip whitespace from elements in lst
+                    lst = [item.strip() for item in lst]
+                    if "NONE" in lst:
+                        lst.pop(0)
+                    if "NONE" in word_del:
+                        word_del.pop(0)
+                    print("")
+                    print(f"{red}TO BE REMOVED:")
+                    print("")
+                    print(f"SYMBOLS: {lst}")
+
+                    # Strip whitespace from elements in word_del
+                    if "" in word_del:
+                        word_del.remove("")
+                    else:
+                        word_del = [item.strip() for item in word_del]
+                    print(F"WORDS: {word_del}")
+                    print("")
+                    execute = input(f"{red}(1){blue}EXECUTE OR {red}(2){blue}BACK?: " + reset)
+                    match execute:
                         case "1":
-                            for c in column_names:
-                                column_names[column_names.index(c)] = c.upper()
-                                lst = [item.upper() for item in lst]
-                                word_del = [item.upper() for item in word_del]
-                            df.columns = column_names
+                            df.columns = apply(lst, word_del)
                         case "2":
-                            for c in column_names:
-                                column_names[column_names.index(c)] = c.title()
-                                lst = [item.title() for item in lst]
-                                word_del = [item.title() for item in word_del]
-                            df.columns = column_names
-                        case "3":
-                            for c in column_names:
-                                column_names[column_names.index(c)] = c.lower()
-                                lst = [item.lower() for item in lst]
-                                word_del = [item.lower() for item in word_del]
-                            df.columns = column_names
+                            continue
+
                 case "6":
                     print("")
                     t_f = input(f"{red}(1){green}CONVERT YES & NO TO TRUE & FALSE OR {red}(2){green}BACK?")
