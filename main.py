@@ -1,7 +1,7 @@
 import pandas as pd
 import tkinter as tk
-from tkinter import filedialog
-import os
+from tkinter import filedialog, messagebox
+import pyautogui as pg
 
 
 # COLOURS
@@ -20,19 +20,36 @@ lst = [""]
 word_lst = []
 word_del = [""]
 count = []
+new_names = []
+
+
+def activate():
+    # Activate PowerShell window by sending Alt+Tab key combination
+    pg.hotkey('alt', 'tab')
+
 
 # PROMPT FOR FILE NAME
 while df.empty:
+    root = tk.Tk()
+    root.withdraw()
+
     try:
-        file = filedialog.askopenfilename()
-        if not file:
-            raise FileNotFoundError
+        csv = messagebox.askokcancel("Import CSV File", "Do you want to import a CSV file?", parent=root)
+        activate()
+        if csv:
+            file = filedialog.askopenfilename(parent=root)
+            activate()
+            if not file:
+                raise FileNotFoundError
+        else:
+            exit()
     except FileNotFoundError:
         print(red + "NO FILE SELECTED, PLEASE SELECT A FILE!")
         continue
     # IMPORT DATA
     try:
         df = pd.read_csv(file)
+        df_new = pd.read_csv(file)
     except UnicodeDecodeError:
         print(red + "WRONG FILE TYPE, PLEASE SELECT A CSV FILE!")
         continue
@@ -62,37 +79,43 @@ def rename(del_sym, del_word):
                 # If the word needs to be replaced, replace it
                 words[idx] = rep_wrd
                 words[idx] = words[idx].strip()
-            # JOIN WORDS BACK INTO STRING
-        column_names_func[rn] = " ".join(words)
-        column_names_func[rn] = column_names_func[rn].strip()
-
-    # WRITE TO NEW FILE
-    df.columns = column_names_func
-    new = input("ENTER A FILE NAME: ")
-    new_file = os.path.dirname(file)
-    print(new_file)
-    df.to_csv(f"{new_file}/{new}.csv", index=False)
+        # JOIN WORDS BACK INTO STRING
+        new_name = " ".join(words).strip()
+        new_names.append(new_name)
+    # Create a dictionary mapping old column names to new column names
+    column_names_dict = dict(zip(df.columns, new_names))
+    df_new = df.rename(columns=column_names_dict)
     print("")
-    print(blue + "DONE! HERE ARE THE NEW COLUMN NAMES: " + reset)
-    print(df.columns)
-    lst.clear()
-    word_del.clear()
-    exit()
+    print(blue + "PREVIEW OF NEW COLUMN NAMES:" + reset)
+    print(yellow + f"{new_names}" + reset)
+    print("")
+    save = input(blue + f"{red}(1){blue}SAVE FILE OR {red}(2){blue}EDIT? " + reset)
+    if save == "1":
+        # WRITE TO NEW FILE
+        new_file = filedialog.asksaveasfilename(defaultextension=".csv", parent=root, filetypes=[("CSV Files", "*.csv")])
+        activate()
+        if new_file:
+            df_new.to_csv(new_file, index=False)
+            print("")
+            print(blue + "DONE! HERE ARE THE NEW COLUMN NAMES: " + reset)
+            print(df_new.columns)
+    elif save == "2":
+        return True
 
 
 if __name__ == "__main__":
 
-
     while True:
         for i in lst:
-            print(blue +""" 
+            print(blue + """ 
                       @@@@@@@@@@   @@@@@@@@@  @@@@@@@@@@@      @@@     @@@@@@@@           @@@  @@@@@@@@@@@       @@  
                     @@   @@@@@   @@@@     @  @   @@@   @     @@@@     @@@   @@@@        @@@   @   @@@   @     @@@@  
                         @@@@     @@@   @        @@@@       @@@@@     @@@@   @@@@      @@@@@      @@@@        @@@@@  
                       @@@@@     @@@@ @@@        @@@       @  @@@     @@@    @@@@     @  @@@      @@@       @@ @@@@  
                      @@@@       @@@            @@@@     @@@@@@@@    @@@@    @@@    @@@@@@@@     @@@@     @@@@@@@@@  
                    @@@@    @@  @@@@     @     @@@@      @     @@@   @@@   @@@@   @@     @@@     @@@     @@    @@@   
-                 @@@@@@@@@@@  @@@@@@@@@@@    @@@@@   @@@    @@@@@ @@@@@@@@@@   @@@@    @@@@@  @@@@@   @@@    @@@@@""" + reset)
+                 @@@@@@@@@@@  @@@@@@@@@@@    @@@@@   @@@    @@@@@ @@@@@@@@@@   @@@@    @@@@@  @@@@@   @@@    @@@@@"""
+                  + reset)
             print("")
             print("")
             column_names = df.columns.tolist()
@@ -244,7 +267,7 @@ if __name__ == "__main__":
                         word_del = [item.strip() for item in word_del]
                     print(F"WORDS: {word_del}")
                     print("")
-                    execute = input(f"{blue}(1){red}EXECUTE OR {blue}(2){red}BACK?: " + reset)
+                    execute = input(f"{red}(1){blue}EXECUTE OR {red}(2){blue}BACK?: " + reset)
                     match execute:
                         case "1":
                             rename(lst, word_del)
@@ -260,7 +283,3 @@ if __name__ == "__main__":
                     print("")
                     print(red + "INVALID INPUT, TRY AGAIN..." + reset)
                     print("")
-
-
-if __name__ == "__main__":
-    main()
