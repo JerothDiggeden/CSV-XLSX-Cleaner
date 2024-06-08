@@ -4,83 +4,97 @@ from tkinter import filedialog
 import os
 
 
-def main():
-    # COLOURS
-    red = '\033[91m'
-    green = '\033[92m'
-    yellow = '\033[93m'
-    blue = '\033[94m'
-    reset = '\033[0m'  # Reset text color to default
+# COLOURS
+red = '\033[91m'
+green = '\033[92m'
+yellow = '\033[93m'
+blue = '\033[94m'
+reset = '\033[0m'  # Reset text color to default
 
-    # VARIABLES
-    root = tk.Tk()
-    root.withdraw()  # Hide the root window
-    df = pd.DataFrame
-    file = ""
-    lst = [""]
-    word_lst = []
-    word_del = [""]
-    count = []
+# VARIABLES
+root = tk.Tk()
+root.withdraw()  # Hide the root window
+df = pd.DataFrame
+file = ""
+lst = [""]
+word_lst = []
+word_del = [""]
+count = []
 
-    # PROMPT FOR FILE NAME
-    while df.empty:
-        try:
-            file = filedialog.askopenfilename()
-            if not file:
-                raise FileNotFoundError
-        except FileNotFoundError:
-            print(red + "NO FILE SELECTED, PLEASE SELECT A FILE!")
-            continue
-        # IMPORT DATA
-        try:
-            df = pd.read_csv(file)
-        except UnicodeDecodeError:
-            print(red + "WRONG FILE TYPE, PLEASE SELECT A CSV FILE!")
-            continue
+# PROMPT FOR FILE NAME
+while df.empty:
+    try:
+        file = filedialog.askopenfilename()
+        if not file:
+            raise FileNotFoundError
+    except FileNotFoundError:
+        print(red + "NO FILE SELECTED, PLEASE SELECT A FILE!")
+        continue
+    # IMPORT DATA
+    try:
+        df = pd.read_csv(file)
+    except UnicodeDecodeError:
+        print(red + "WRONG FILE TYPE, PLEASE SELECT A CSV FILE!")
+        continue
 
-    col_names = df.columns
+col_names = df.columns
 
-    # FUNCTION TO REPLACE COLUMN NAMES
+# FUNCTION TO REPLACE COLUMN NAMES
 
-    def rename(del_sym, del_word):
 
-        column_names_func = df.columns.tolist()
-        print("")
-        rep_sym = input(f"{green}REPLACE SYMBOL WITH? ")
-        rep_wrd = input(f"{green}REPLACE WORD WITH? ")
-        for rn in range(len(column_names_func)):
-            # SYMBOL
-            for sym_rep in range(len(del_sym)):
-                # REMOVE SYMBOL FROM STRING
-                column_names_func[rn] = column_names_func[rn].replace(del_sym[sym_rep], rep_sym)
-            # WORD
-            # SPLIT STRING INTO INDIVIDUAL WORDS
-            words = column_names_func[rn].split()
-            for idx, word in enumerate(words):
-                # Iterate over words, not indices
-                if word in del_word:
-                    # If the word needs to be replaced, replace it
-                    words[idx] = rep_wrd
-                    words[idx] = words[idx].strip()
-                # JOIN WORDS BACK INTO STRING
-            column_names_func[rn] = " ".join(words)
-            column_names_func[rn] = column_names_func[rn].strip()
+def rename(del_sym, del_word):
 
-        # WRITE TO NEW FILE
-        df.columns = column_names_func
-        new = input("ENTER A FILE NAME: ")
-        new_file = os.path.dirname(file)
-        print(new_file)
-        df.to_csv(f"{new_file}/{new}.csv", index=False)
-        print("")
-        print(blue + "DONE! HERE ARE THE NEW COLUMN NAMES: " + reset)
-        print(df.columns)
-        lst.clear()
-        word_del.clear()
-        exit()
+    column_names_func = df.columns.tolist()
+    print("")
+    rep_sym = input(f"{green}REPLACE SYMBOL WITH? ")
+    rep_wrd = input(f"{green}REPLACE WORD WITH? ")
+    for rn in range(len(column_names_func)):
+        # SYMBOL
+        for sym_rep in range(len(del_sym)):
+            # REMOVE SYMBOL FROM STRING
+            column_names_func[rn] = column_names_func[rn].replace(del_sym[sym_rep], rep_sym)
+        # WORD
+        # SPLIT STRING INTO INDIVIDUAL WORDS
+        words = column_names_func[rn].split()
+        for idx, word in enumerate(words):
+            # Iterate over words, not indices
+            if word in del_word:
+                # If the word needs to be replaced, replace it
+                words[idx] = rep_wrd
+                words[idx] = words[idx].strip()
+            # JOIN WORDS BACK INTO STRING
+        column_names_func[rn] = " ".join(words)
+        column_names_func[rn] = column_names_func[rn].strip()
+
+    # WRITE TO NEW FILE
+    df.columns = column_names_func
+    new = input("ENTER A FILE NAME: ")
+    new_file = os.path.dirname(file)
+    print(new_file)
+    df.to_csv(f"{new_file}/{new}.csv", index=False)
+    print("")
+    print(blue + "DONE! HERE ARE THE NEW COLUMN NAMES: " + reset)
+    print(df.columns)
+    lst.clear()
+    word_del.clear()
+    exit()
+
+
+if __name__ == "__main__":
+
 
     while True:
         for i in lst:
+            print(blue +""" 
+                      @@@@@@@@@@   @@@@@@@@@  @@@@@@@@@@@      @@@     @@@@@@@@           @@@  @@@@@@@@@@@       @@  
+                    @@   @@@@@   @@@@     @  @   @@@   @     @@@@     @@@   @@@@        @@@   @   @@@   @     @@@@  
+                        @@@@     @@@   @        @@@@       @@@@@     @@@@   @@@@      @@@@@      @@@@        @@@@@  
+                      @@@@@     @@@@ @@@        @@@       @  @@@     @@@    @@@@     @  @@@      @@@       @@ @@@@  
+                     @@@@       @@@            @@@@     @@@@@@@@    @@@@    @@@    @@@@@@@@     @@@@     @@@@@@@@@  
+                   @@@@    @@  @@@@     @     @@@@      @     @@@   @@@   @@@@   @@     @@@     @@@     @@    @@@   
+                 @@@@@@@@@@@  @@@@@@@@@@@    @@@@@   @@@    @@@@@ @@@@@@@@@@   @@@@    @@@@@  @@@@@   @@@    @@@@@""" + reset)
+            print("")
+            print("")
             column_names = df.columns.tolist()
             print(yellow + "COLUMN NAMES" + reset)
             print(column_names)
