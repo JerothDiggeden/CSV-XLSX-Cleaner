@@ -89,12 +89,21 @@ def apply(del_sym, del_word):
     rep_sym = input(f"{green}REPLACE SYMBOL WITH? ")
     rep_wrd = input(f"{green}REPLACE WORD WITH? ")
     for rn in range(len(column_names_func)):
+        # Check if the column name contains only digits
+        if column_names_func[rn].isdigit():
+            new_names.append(column_names_func[rn])
+            continue  # Move to the next column
+
         # SYMBOL
         for sym_rep in range(len(del_sym)):
             # REMOVE SYMBOL FROM STRING
             column_names_func[rn] = column_names_func[rn].replace(del_sym[sym_rep], rep_sym)
         # WORD
         # SPLIT STRING INTO INDIVIDUAL WORDS
+        nums = column_names_func[rn]
+        if nums.isdigit():
+            continue  # Move to the next column if it's a numeric string
+
         words = column_names_func[rn].split()
         for idx, word in enumerate(words):
             # ITERATE OVER WORDS
@@ -198,7 +207,7 @@ if __name__ == "__main__":
             print(yellow + "LIST OF WORDS TO REMOVE" + red)
             print(*word_del)
             print("" + reset)
-            sel = input(f"{blue}(1){green}SYMBOLS {blue}(2){green}WORDS {blue}(3){green}CAPITALIZE OR LOWER CASE"
+            sel = input(f"{blue}(1){green}SYMBOLS {blue}(2){green}WORDS & NUMBERS {blue}(3){green}CAPITALIZE OR LOWER CASE"
                         f" {blue}(4){green}EDIT LISTS {blue}(5){green}APPLY CHANGES {blue}(6){green}"
                         f"TRUE & FALSE {blue}(7){green}REMOVE NAN ROWS {blue}(8){green}SAVE {blue}(9)"
                         f"{green}EXIT? " + reset)
@@ -209,18 +218,24 @@ if __name__ == "__main__":
                         lst.remove("NONE")
                     print("")
                     resp = input(green + "ENTER SYMBOL/S TO REMOVE: " + reset)
-                    if len(resp) == 1:
-                        try:
-                            lst.append(resp)
-                            count.append(0)
-                            print("")
-                            print(blue + f"{resp} ADDED TO LIST" + reset)
-                            print("")
-                        except ValueError:
+                    if resp.isalpha():
+                        print(red + "INVALID INPUT, PLEASE ENTER SYMBOLS ONLY! PRESS ENTER.")
+                        lst.append("NONE")
+                        enter = input()
+                        if enter == "":
                             continue
-                    elif len(resp) < 1:
-                        print(red + "NO SYMBOL DETECTED, TRY AGAIN..." + reset)
-                        continue
+                    elif resp.isdigit():
+                        print(red + "INVALID INPUT, PLEASE ENTER SYMBOLS ONLY! PRESS ENTER.")
+                        lst.append("NONE")
+                        enter = input()
+                        if enter == "":
+                            continue
+                    elif len(resp) == 1:
+                        lst.append(resp)
+                        count.append(0)
+                        print("")
+                        print(blue + f"{resp} ADDED TO LIST" + reset)
+                        print("")
                     elif len(resp) > 1:
                         lst1 = list(resp)
                         for s in lst1:
@@ -228,34 +243,35 @@ if __name__ == "__main__":
                         print("")
                         print(blue + f"{resp} ADDED TO LIST" + reset)
                         print("")
+                    elif len(resp) < 1:
+                        print(red + "NO SYMBOL DETECTED, TRY AGAIN!")
+                        lst.append("NONE")
+                        continue  # Return to the beginning of the for loop
 
                 case "2":
                     if "NONE" in word_del:
                         word_del.remove("NONE")
                     print("")
                     word = input(green + "ENTER A WORD/S TO REMOVE: " + reset)
-                    if "1" in word or "2" in word or "3" in word or "4" in word or "5" in word or "6" in word or "7" in word or "8" in word or "9" in word or "0" in word:
+                    if "!" in word or "@" in word or "#" in word or "$" in word or "%" in word or "^" in word or "&" in word or "(" in word or ")" in word or "(" in word or ")" in word or "-" in word or "_" in word or "+" in word or "=" in word:
+                        print(red + "INVALID INPUT, PLEASE ENTER LETTERS OR WORDS! PRESS ENTER.")
+                        word_del.append("NONE")
+                        enter = input()
+                        if enter == "":
+                            continue
+                    elif word == "":
                         print(red + "INVALID INPUT, PLEASE ENTER LETTERS OR WORDS!")
                         continue
-                    if word == "":
-                        print(red + "INVALID INPUT, PLEASE ENTER LETTERS OR WORDS!")
-                        continue
-                    if " " in word:
-                        word_del = word.split()
-                    elif " " not in word:
-                        word_del.append(word)
-                    if len(word_lst) == 1:
+                    elif " " in word:
+                        words_new = word.split()
+                        for w in words_new:
+                            word_del.append(w)
+                        print("")
+                        print(blue + f"{word} ADDED TO LIST" + reset)
+                        print("")
+                    elif len(word) == 1:
                         try:
                             word_del.append(word)
-                            print("")
-                            print(blue + f"{word} ADDED TO LIST" + reset)
-                            print("")
-                        except ValueError:
-                            continue
-                    elif len(word_del) > 1:
-                        try:
-                            for word_n in word_lst:
-                                word_del.append(word_n)
                             print("")
                             print(blue + f"{word} ADDED TO LIST" + reset)
                             print("")
@@ -346,6 +362,8 @@ if __name__ == "__main__":
                             df_orig_cols = df.columns.tolist()
                             df.columns = apply(lst, word_del)
                         case "2":
+                            continue
+                        case "":
                             continue
 
                 case "6":
