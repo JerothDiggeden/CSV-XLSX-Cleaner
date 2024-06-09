@@ -19,7 +19,6 @@ lst = ["NONE"]
 word_del = ["NONE"]
 word_lst = []
 count = []
-new_names = []
 
 
 # ALT-TAB
@@ -110,7 +109,7 @@ def apply(del_sym, del_word):
     column_names_dict = dict(zip(df.columns, new_names))
     df_replaced = df.rename(columns=column_names_dict)
     print("")
-    print(blue + "PREVIEW OF NEW COLUMN NAMES:" + reset)
+    print(blue + "PREVIEW OF NEW COLUMN NAMES: " + reset)
     print(yellow + f"{df_replaced.columns}" + reset)
     print("")
     save_changes = input(blue + f"{red}(1){blue}SAVE CHANGES OR {red}(2){blue}EDIT AGAIN? " + reset)
@@ -202,7 +201,7 @@ if __name__ == "__main__":
             sel = input(f"{blue}(1){green}SYMBOLS {blue}(2){green}WORDS {blue}(3){green}CAPITALIZE OR LOWER CASE"
                         f" {blue}(4){green}EDIT LISTS {blue}(5){green}APPLY CHANGES {blue}(6){green}"
                         f"TRUE & FALSE {blue}(7){green}REMOVE NAN ROWS {blue}(8){green}SAVE {blue}(9)"
-                        f"{green}EXIT?" + reset)
+                        f"{green}EXIT? " + reset)
 
             match sel:
                 case "1":
@@ -292,7 +291,7 @@ if __name__ == "__main__":
                     match sw:
                         case "1":
                             print("")
-                            print(yellow + "SYMBOL LIST TO EDIT:" + reset)
+                            print(yellow + "SYMBOL LIST TO EDIT: " + reset)
                             print("")
                             print(*lst)
                             print("")
@@ -302,6 +301,7 @@ if __name__ == "__main__":
                                 print("")
                                 print(red + f"{edit_s} REMOVED FROM LIST" + reset)
                                 print("")
+                                continue
                             elif len(edit_s) > 1:
                                 for e in lst:
                                     if e in lst:
@@ -309,6 +309,7 @@ if __name__ == "__main__":
                                 print("")
                                 print(red + f"{edit_s} REMOVED FROM LIST" + reset)
                                 print("")
+                                continue
                         case "2":
                             print("")
                             print(yellow + "WORD LIST TO EDIT:" + reset)
@@ -321,10 +322,12 @@ if __name__ == "__main__":
                                 print("")
                                 print(red + f"{edit_w} DELETED FROM WORD LIST:" + reset)
                                 print("")
+                                continue
                             else:
                                 print("")
                                 print(red + "WORD NOT FOUND IN LIST, TRY AGAIN...:" + reset)
                                 print("")
+                            continue
 
                 case "5":
                     if "NONE" in lst:
@@ -347,7 +350,7 @@ if __name__ == "__main__":
 
                 case "6":
                     print("")
-                    t_f = input(f"{red}(1){green}CONVERT YES & NO TO TRUE & FALSE OR {red}(2){green}BACK?")
+                    t_f = input(f"{red}(1){green}CONVERT YES & NO TO TRUE & FALSE OR {red}(2){green}BACK? " + reset)
                     if t_f == "1":
                         true_false()
                     elif t_f == "2":
@@ -355,7 +358,7 @@ if __name__ == "__main__":
 
                 case "7":
                     print("")
-                    t_f = input(f"{red}(1){green}DELETE ROWS WITH NaN CELLS OR {red}(2){green}BACK?")
+                    t_f = input(f"{red}(1){green}DELETE ROWS WITH NaN CELLS OR {red}(2){green}BACK? " + reset)
                     if t_f == "1":
                         df = nan(df)
                     elif t_f == "2":
