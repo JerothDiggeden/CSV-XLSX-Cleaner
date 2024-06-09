@@ -14,10 +14,7 @@ reset = '\033[0m'
 
 # VARIABLES
 root = tk.Tk()
-root.withdraw()  # Hide the root window
-df = pd.DataFrame
-col_names = df.columns
-file = ""
+root.withdraw()
 lst = ["NONE"]
 word_del = ["NONE"]
 word_lst = []
@@ -27,54 +24,69 @@ new_names = []
 
 # ALT-TAB
 def activate():
-    # Activate PowerShell window by sending Alt+Tab key combination
+    # ACTIVATE POWERSHELL WINDOW
     pg.hotkey('alt', 'tab')
 
 
 # CLICK
 def click():
-    # Activate PowerShell window by sending click command
+    # ACTIVATE POWERSHELL WINDOW
     pg.click()
 
 
 # IMPORT FILE
 def imp_file():
-    while df.empty:
-        root = tk.Tk()
-        root.withdraw()
 
-        try:
-            csv = messagebox.askokcancel("Import File", "Do you want to import a file?", parent=root)
-            if csv:
-                file = filedialog.askopenfilename(parent=root)
-                click()
-                if not file:
-                    raise FileNotFoundError
-            else:
-                exit()
-        except FileNotFoundError:
-            print(red + "NO FILE SELECTED, PLEASE SELECT A FILE!")
-            continue
-        # IMPORT DATA
-        try:
-            ext_len = len(file) - 3
-            ext = file[ext_len:]
-            if ext == "csv":
-                df = pd.read_csv(file)
-                df_new = pd.read_csv(file)
-            elif ext == "lsx":
-                df = pd.read_excel(file)
-            elif ext == "xls":
-                df = pd.read_excel(file)
-        except UnicodeDecodeError:
-            print(red + "WRONG FILE TYPE, PLEASE SELECT A CSV FILE!")
-            continue
+    df_imp = pd.DataFrame
+    root.withdraw()
+    csv = messagebox.askokcancel("Import File", "Do you want to import a CSV or XLSX file?", parent=root)
+
+    if csv:
+        file = filedialog.askopenfilename(parent=root)
+        click()
+        if not file:
+            raise FileNotFoundError
+    else:
+        exit()
+
+    # IMPORT DATA
+
+    ext_len = len(file) - 3
+    ext = file[ext_len:]
+    if ext == "csv":
+        df_imp = pd.read_csv(file)
+    elif ext == "lsx":
+        df_imp = pd.read_excel(file)
+    elif ext == "xls":
+        df_imp = pd.read_excel(file)
+    else:
+        messagebox.showinfo("Error", "Wrong file format! Please select a CSV or XLSX file")
+        if csv:
+            file = filedialog.askopenfilename(parent=root)
+            click()
+            if not file:
+                raise FileNotFoundError
+        else:
+            exit()
+
+        ext_len = len(file) - 3
+        ext = file[ext_len:]
+        if ext == "csv":
+            df_imp = pd.read_csv(file)
+        elif ext == "lsx":
+            df_imp = pd.read_excel(file)
+        elif ext == "xls":
+            df_imp = pd.read_excel(file)
+
+    return df_imp
 
 
 # REPLACE COLUMN NAMES AND SYMBOLS
+
 def apply(del_sym, del_word):
+    new_names = []
+    df_orig = df.copy()
     column_names_func = df.columns.tolist()
-    print("")
     rep_sym = input(f"{green}REPLACE SYMBOL WITH? ")
     rep_wrd = input(f"{green}REPLACE WORD WITH? ")
     for rn in range(len(column_names_func)):
@@ -101,24 +113,27 @@ def apply(del_sym, del_word):
     print(blue + "PREVIEW OF NEW COLUMN NAMES:" + reset)
     print(yellow + f"{df_replaced.columns}" + reset)
     print("")
-    save = input(blue + f"{red}(1){blue}SAVE CHANGES OR {red}(2){blue}EDIT AGAIN? " + reset)
-    if save == "1":
+    save_changes = input(blue + f"{red}(1){blue}SAVE CHANGES OR {red}(2){blue}EDIT AGAIN? " + reset)
+    if save_changes == "1":
         print("")
         print(blue + "DONE! HERE ARE THE NEW COLUMN NAMES: " + reset)
         print(df_replaced.columns)
         return df_replaced.columns
-    elif save == "2":
-        return True
+    elif save_changes == "2":
+        df_replaced.columns = df_orig.columns.tolist()
+        return df_replaced.columns
 
 
 # SAVE FILE
 def save():
-    save = input(blue + f"{red}(1){blue}SAVE FILE OR {red}(2){blue}EDIT AGAIN? " + reset)
-    if save == "1":
+    save_file = input(blue + f"{red}(1){blue}SAVE FILE OR {red}(2){blue}EDIT AGAIN? " + reset)
+    if save_file == "1":
         # WRITE TO NEW FILE
         new_file = filedialog.asksaveasfilename(defaultextension=".csv", parent=root,
                                                 filetypes=[("CSV Files", "*.csv"),
                                                            ("XLSX Files", "*.xlsx")])
+        ext_len = len(new_file) - 3
+        ext = new_file[ext_len:]
         activate()
         if new_file:
             if ext == "csv":
@@ -127,7 +142,7 @@ def save():
                 df.to_excel(new_file, index=False)
             elif ext == "xls":
                 df.to_excel(new_file, index=False)
-    elif save == "2":
+    elif save_file == "2":
         return True
 
 
@@ -154,14 +169,13 @@ def true_false():
 def nan(df_new):
     # CALCULATE TOTAL ITERATIONS IN DATAFRAME
     df_new = df_new.dropna()
-
     return df_new  # RETURN MODIFIED DATAFRAME
 
 
 # MAIN SCRIPT
 if __name__ == "__main__":
 
-    imp_file()
+    df = imp_file()
     while True:
         for i in lst:
             print(blue + """ 
@@ -175,8 +189,8 @@ if __name__ == "__main__":
                   + reset)
             print("")
             print("")
-            column_names = df.columns.tolist()
             print(yellow + "COLUMN NAMES" + reset)
+            column_names = df.columns.tolist()
             print(column_names)
             print("")
             print(yellow + "LIST OF SYMBOLS TO REMOVE" + red)
@@ -192,7 +206,8 @@ if __name__ == "__main__":
 
             match sel:
                 case "1":
-                    lst.remove("NONE")
+                    if "NONE" in lst:
+                        lst.remove("NONE")
                     print("")
                     resp = input(green + "ENTER SYMBOL/S TO REMOVE: " + reset)
                     if len(resp) == 1:
@@ -216,7 +231,8 @@ if __name__ == "__main__":
                         print("")
 
                 case "2":
-                    word_del.remove("NONE")
+                    if "NONE" in word_del:
+                        word_del.remove("NONE")
                     print("")
                     word = input(green + "ENTER A WORD/S TO REMOVE: " + reset)
                     if "1" in word or "2" in word or "3" in word or "4" in word or "5" in word or "6" in word or "7" in word or "8" in word or "9" in word or "0" in word:
@@ -311,8 +327,6 @@ if __name__ == "__main__":
                                 print("")
 
                 case "5":
-                    # STRIP WHITE SPACE FROM ELEMENTS IN LST
-                    lst = [item.strip() for item in lst]
                     if "NONE" in lst:
                         lst.pop(0)
                     if "NONE" in word_del:
@@ -321,17 +335,12 @@ if __name__ == "__main__":
                     print(f"{red}TO BE REMOVED:")
                     print("")
                     print(f"SYMBOLS: {lst}")
-
-                    # STRIP WHITE SPACE FROM ELEMENTS IN WORD_DEL
-                    if "" in word_del:
-                        word_del.remove("")
-                    else:
-                        word_del = [item.strip() for item in word_del]
                     print(F"WORDS: {word_del}")
                     print("")
                     execute = input(f"{red}(1){blue}EXECUTE OR {red}(2){blue}BACK?: " + reset)
                     match execute:
                         case "1":
+                            df_orig_cols = df.columns.tolist()
                             df.columns = apply(lst, word_del)
                         case "2":
                             continue
