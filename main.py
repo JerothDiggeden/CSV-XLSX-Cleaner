@@ -10,12 +10,13 @@ red = '\033[91m'
 green = '\033[92m'
 yellow = '\033[93m'
 blue = '\033[94m'
-reset = '\033[0m'  # Reset text color to default
+reset = '\033[0m'
 
 # VARIABLES
 root = tk.Tk()
 root.withdraw()  # Hide the root window
 df = pd.DataFrame
+col_names = df.columns
 file = ""
 lst = ["NONE"]
 word_del = ["NONE"]
@@ -24,52 +25,53 @@ count = []
 new_names = []
 
 
+# ALT-TAB
 def activate():
     # Activate PowerShell window by sending Alt+Tab key combination
     pg.hotkey('alt', 'tab')
 
 
+# CLICK
 def click():
+    # Activate PowerShell window by sending click command
     pg.click()
 
 
-# PROMPT FOR FILE NAME
-while df.empty:
-    root = tk.Tk()
-    root.withdraw()
+# IMPORT FILE
+def imp_file():
+    while df.empty:
+        root = tk.Tk()
+        root.withdraw()
 
-    try:
-        csv = messagebox.askokcancel("Import File", "Do you want to import a file?", parent=root)
-        if csv:
-            file = filedialog.askopenfilename(parent=root)
-            click()
-            if not file:
-                raise FileNotFoundError
-        else:
-            exit()
-    except FileNotFoundError:
-        print(red + "NO FILE SELECTED, PLEASE SELECT A FILE!")
-        continue
-    # IMPORT DATA
-    try:
-        ext_len = len(file) - 3
-        ext = file[ext_len:]
-        if ext == "csv":
-            df = pd.read_csv(file)
-            df_new = pd.read_csv(file)
-        elif ext == "lsx":
-            df = pd.read_excel(file)
-        elif ext == "xls":
-            df = pd.read_excel(file)
-    except UnicodeDecodeError:
-        print(red + "WRONG FILE TYPE, PLEASE SELECT A CSV FILE!")
-        continue
-
-col_names = df.columns
-
-# FUNCTION TO REPLACE COLUMN NAMES
+        try:
+            csv = messagebox.askokcancel("Import File", "Do you want to import a file?", parent=root)
+            if csv:
+                file = filedialog.askopenfilename(parent=root)
+                click()
+                if not file:
+                    raise FileNotFoundError
+            else:
+                exit()
+        except FileNotFoundError:
+            print(red + "NO FILE SELECTED, PLEASE SELECT A FILE!")
+            continue
+        # IMPORT DATA
+        try:
+            ext_len = len(file) - 3
+            ext = file[ext_len:]
+            if ext == "csv":
+                df = pd.read_csv(file)
+                df_new = pd.read_csv(file)
+            elif ext == "lsx":
+                df = pd.read_excel(file)
+            elif ext == "xls":
+                df = pd.read_excel(file)
+        except UnicodeDecodeError:
+            print(red + "WRONG FILE TYPE, PLEASE SELECT A CSV FILE!")
+            continue
 
 
+# REPLACE COLUMN NAMES AND SYMBOLS
 def apply(del_sym, del_word):
     column_names_func = df.columns.tolist()
     print("")
@@ -84,15 +86,15 @@ def apply(del_sym, del_word):
         # SPLIT STRING INTO INDIVIDUAL WORDS
         words = column_names_func[rn].split()
         for idx, word in enumerate(words):
-            # Iterate over words, not indices
+            # ITERATE OVER WORDS
             if word in del_word:
-                # If the word needs to be replaced, replace it
+                # REPLACE WORD IF NEED BE
                 words[idx] = rep_wrd
                 words[idx] = words[idx].strip()
         # JOIN WORDS BACK INTO STRING
         new_name = " ".join(words).strip()
         new_names.append(new_name)
-    # Create a dictionary mapping old column names to new column names
+    # CREATE A DICTIONARY MAPPING OLD WORDS TO NEW WORDS
     column_names_dict = dict(zip(df.columns, new_names))
     df_replaced = df.rename(columns=column_names_dict)
     print("")
@@ -109,6 +111,7 @@ def apply(del_sym, del_word):
         return True
 
 
+# SAVE FILE
 def save():
     save = input(blue + f"{red}(1){blue}SAVE FILE OR {red}(2){blue}EDIT AGAIN? " + reset)
     if save == "1":
@@ -128,33 +131,37 @@ def save():
         return True
 
 
+# REPLACE YES AND NO WITH TRUE AND FALSE
 def true_false():
-    # Calculate the total number of iterations (cells) in the DataFrame
+    # CALCULATE TOTAL ITERATIONS IN DATAFRAME
     total_iterations = df.size
 
-    # Initialize the progress bar
+    # INITIALISE THE PROGRESS BAR
     with tqdm(total=total_iterations) as pbar:
-        # Iterate over each cell in the DataFrame
+        # ITERATE OVER EACH CELL IN THE DATAFRAME
         for index, value in df.stack().items():
-            # Perform your processing here
+            # SWAP YES & NO WITH TRUE & FALSE
             if value == 'Yes':
                 df.at[index] = 'TRUE'
             elif value == 'No':
                 df.at[index] = 'FALSE'
 
-            # Update the progress bar
+            # UPDATE PROGRESS BAR
             pbar.update(1)
 
 
+# DROP NAN ROWS
 def nan(df_new):
-    # Calculate the total number of iterations (cells) in the DataFrame
+    # CALCULATE TOTAL ITERATIONS IN DATAFRAME
     df_new = df_new.dropna()
 
-    return df_new  # Return the modified DataFrame
+    return df_new  # RETURN MODIFIED DATAFRAME
 
 
+# MAIN SCRIPT
 if __name__ == "__main__":
 
+    imp_file()
     while True:
         for i in lst:
             print(blue + """ 
@@ -304,7 +311,7 @@ if __name__ == "__main__":
                                 print("")
 
                 case "5":
-                    # Strip whitespace from elements in lst
+                    # STRIP WHITE SPACE FROM ELEMENTS IN LST
                     lst = [item.strip() for item in lst]
                     if "NONE" in lst:
                         lst.pop(0)
@@ -315,7 +322,7 @@ if __name__ == "__main__":
                     print("")
                     print(f"SYMBOLS: {lst}")
 
-                    # Strip whitespace from elements in word_del
+                    # STRIP WHITE SPACE FROM ELEMENTS IN WORD_DEL
                     if "" in word_del:
                         word_del.remove("")
                     else:
